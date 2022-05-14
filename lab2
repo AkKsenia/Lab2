@@ -1,0 +1,631 @@
+#include <iostream>
+#include <cstdlib> 
+using namespace std;
+
+
+//implementation of a dynamic array
+template <class T>
+class DynamicArray {
+private:
+    int size_of_array;
+    int capacity_of_array;
+    T* data_of_array;
+public:
+    DynamicArray(T* items, int count);
+    DynamicArray(int size);
+    DynamicArray(const DynamicArray<T>& old_version);
+    T Get(int index);//can throw IndexOutOfRange
+    int GetSize();
+    void Set(int index, T value);//can throw IndexOutOfRange
+    void Resize(int newSize);
+    void GetArray();
+};
+
+template <class T>
+DynamicArray<T>::DynamicArray(const DynamicArray<T>& old_version) {
+    size_of_array = old_version.size_of_array;
+    capacity_of_array = size_of_array;
+    data_of_array = NULL;
+    if (size_of_array != 0)
+        data_of_array = new T[size_of_array];
+    else
+        data_of_array = 0;
+    for (int i = 0; i < size_of_array; i++)
+        data_of_array[i] = old_version.data_of_array[i];
+}
+
+template <class T>
+DynamicArray<T>::DynamicArray(int size) {
+    size_of_array = size;
+    capacity_of_array = size_of_array;
+    if (size_of_array != 0)
+        data_of_array = new T[size];
+    else
+        data_of_array = 0;
+}
+
+template <class T>
+DynamicArray<T>::DynamicArray(T* items, int count) {
+    size_of_array = count;
+    capacity_of_array = size_of_array;
+    if (size_of_array != 0) {
+        data_of_array = new T[count];
+        for (int i = 0; i < count; i++)
+            data_of_array[i] = items[i];
+    }
+    else
+        data_of_array = 0;
+}
+
+template <class T>
+int DynamicArray<T>::GetSize() {
+    return size_of_array;
+}
+
+template <class T>
+T DynamicArray<T>::Get(int index) {
+    if ((index > size_of_array - 1) || (index < 0))
+        throw "IndexOutOfRange";
+    return data_of_array[index];
+}
+
+template <class T>
+void DynamicArray<T>::Set(int index, T value) {
+    if ((index > size_of_array - 1) || (index < 0))
+        throw "IndexOutOfRange";
+    data_of_array[index] = value;
+}
+
+template <class T>
+void DynamicArray<T>::Resize(int newSize) {
+    if (newSize > capacity_of_array) {
+        int new_capacity = max(newSize, size_of_array * 2);
+        T* new_data = new T[newSize];
+        for (int i = 0; i < size_of_array; ++i)
+            new_data[i] = data_of_array[i];
+        delete[] data_of_array;
+        data_of_array = new_data;
+        capacity_of_array = new_capacity;
+    }
+    size_of_array = newSize;
+}
+
+template <class T>
+void DynamicArray<T>::GetArray() {
+    for (int i = 0; i < size_of_array; i++)
+        cout << data_of_array[i] << " ";
+    cout << "\n";
+}
+
+
+//implementation of a linked list
+template <class T>
+class Node {
+public:
+    T data;
+    Node<T>* next;
+};
+
+template <class T>
+class LinkedList {
+private:
+    Node<T>* head;
+public:
+    LinkedList(T* items, int count);
+    LinkedList();
+    LinkedList(const LinkedList<T>& old_version);
+    T GetFirst();//can throw IndexOutOfRange
+    T GetLast();//can throw IndexOutOfRange
+    T Get(int index);//can throw IndexOutOfRange
+    LinkedList<T>* GetSubList(int startindex, int endindex);//can throw IndexOutOfRange
+    int GetLength();
+    void Append(T item);
+    void Prepend(T item);
+    void InsertAt(T item, int index);//can throw IndexOutOfRange
+    LinkedList<T>* Concat(const LinkedList<T>& list);
+    void GetList();
+};
+
+template <class T>
+LinkedList<T>::LinkedList() { head = nullptr; }
+
+template <class T>
+LinkedList<T>::LinkedList(T* items, int count) {
+    if (count > 0) {
+        Node<T>* node1 = new Node<T>;
+        Node<T>* node2 = new Node<T>;
+        node1->data = items[0];
+        if (count == 1) {
+            node1->next = nullptr;
+            head = node1;
+        }
+        else {
+            node1->next = node2;
+            head = node1;
+            for (int i = 1; i < count - 1; ++i) {
+                Node<T>* node3 = new Node<T>;
+                node2->data = items[i];
+                node2->next = node3;
+                node2 = node2->next;
+            }
+            node2->data = items[count - 1];
+            node2->next = nullptr;
+        }
+    }
+    else head = nullptr;
+}
+
+template <class T>
+LinkedList<T>::LinkedList(const LinkedList<T>& old_version) {
+    int kol_vo = 0;
+    Node<T>* cur_node = old_version.head;
+    if (cur_node != nullptr) {
+        while (cur_node->next != nullptr) {
+            ++kol_vo;
+            cur_node = cur_node->next;
+        }
+        ++kol_vo;
+        Node<T>* node1 = new Node<T>;
+        Node<T>* old_node = old_version.head;
+        node1->data = old_node->data;
+        old_node = old_node->next;
+        if (kol_vo == 1) {
+            node1->next = nullptr;
+            head = node1;
+        }
+        else {
+            node1->next = old_node;
+            head = node1;
+            node1 = node1->next;
+            for (int i = 1; i < kol_vo - 1; ++i) {
+                node1->data = old_node->data;
+                old_node = old_node->next;
+                node1->next = old_node;
+                node1 = node1->next;
+            }
+            node1->data = old_node->data;
+            node1->next = nullptr;
+        }
+    }
+    else head = nullptr;
+}
+
+template <class T>
+LinkedList<T>* LinkedList<T>::Concat(const LinkedList<T>& list) {
+    LinkedList<T>* concat_list = new LinkedList<T>();
+    Node<T>* node1 = head;
+    Node<T>* node2 = list.head;
+    while (node1 != nullptr)
+    {
+        concat_list->Append(node1->data);
+        node1 = node1->next;
+    }
+    while (node2 != nullptr)
+    {
+        concat_list->Append(node2->data);
+        node2 = node2->next;
+    }
+    return concat_list;
+}
+
+template <class T>
+LinkedList<T>* LinkedList<T>::GetSubList(int startindex, int endindex) {
+    Node<T>* node = head;
+    int kol_vo = 0;
+    while (node != nullptr) {
+        node = node->next;
+        ++kol_vo;
+    }
+    if ((startindex < 0) || (startindex >= kol_vo) || (endindex < 0) || (endindex >= kol_vo))
+        throw "IndexOutOfRange";
+    LinkedList<T>* list = new LinkedList<T>();
+    Node<T>* current = head;
+    int k = 0;
+    while (k != startindex) {
+        current = current->next;
+        ++k;
+    }
+    for (k; k <= endindex; k++) {
+        list->Append(current->data);
+        current = current->next;
+    }
+    return list;
+}
+
+template <class T>
+void LinkedList<T>::Prepend(T item) {
+    Node<T>* new_node = new Node<T>;
+    new_node->data = item;
+    new_node->next = head;
+    head = new_node;
+}
+
+template <class T>
+void LinkedList<T>::Append(T item) {
+    Node<T>* new_node = new Node<T>;
+    new_node->data = item;
+    new_node->next = nullptr;
+    Node<T>* current = head;
+    if (current != nullptr) {
+        while (current->next != nullptr) {
+            current = current->next;
+        }
+        current->next = new_node;
+    }
+    else
+        head = new_node;
+}
+
+template <class T>
+void LinkedList<T>::InsertAt(T item, int index) {
+    Node<T>* node = head;
+    int kol_vo = 0;
+    while (node != nullptr) {
+        node = node->next;
+        ++kol_vo;
+    }
+    if ((index < 0) || (index > kol_vo))
+        throw "IndexOutOfRange";
+    Node<T>* new_node = new Node<T>;
+    new_node->data = item;
+    new_node->next = nullptr;
+    Node<T>* current = head;
+    Node<T>* current1 = nullptr;
+    int k = 0;
+    if (index > 0) {
+        while (k != index - 1) {
+            current = current->next;
+            ++k;
+        }
+        current1 = current->next;
+        current->next = new_node;
+        current = current->next;
+        current->next = current1;
+    }
+    if (index == 0) {
+        new_node->next = head;
+        head = new_node;
+    }
+}
+
+template <class T>
+int LinkedList<T>::GetLength() {
+    int kol_vo = 0, flag = 0;
+    Node<T>* current = head;
+    if (current->next == nullptr)
+        flag = 1;
+    while (current->next != nullptr) {
+        current = current->next;
+        ++kol_vo;
+    }
+    if (flag == 0)
+        return kol_vo + 1;
+    else
+        return kol_vo;
+}
+
+template <class T>
+T LinkedList<T>::Get(int index) {
+    Node<T>* current = head;
+    Node<T>* current1 = head;
+    int kol_vo = 0, k = 0;
+    while (current != nullptr) {
+        current = current->next;
+        ++kol_vo;
+    }
+    if ((index < 0) || (index > kol_vo - 1))
+        throw "IndexOutOfRange";
+    while (k != index) {
+        current1 = current1->next;
+        ++k;
+    }
+    return current1->data;
+}
+
+template <class T>
+T LinkedList<T>::GetLast() {
+    Node<T>* current = head;
+    if (current->next == nullptr)
+        throw "IndexOutOfRange";
+    while (current->next != nullptr) {
+        current = current->next;
+    }
+    return current->data;
+}
+
+template <class T>
+T LinkedList<T>::GetFirst() {
+    Node<T>* current = head;
+    if (current->next == nullptr)
+        throw "IndexOutOfRange";
+    return current->data;
+}
+
+template <class T>
+void LinkedList<T>::GetList() {
+    Node<T>* current = head;
+    while (current != nullptr) {
+        cout << current->data << " ";
+        current = current->next;
+    }
+    cout << endl;
+}
+
+
+//implementation of sequence
+template <class T>
+class Sequence {
+public:
+    virtual T GetFirst() = 0;//can throw IndexOutOfRange
+    virtual T GetLast() = 0;//can throw IndexOutOfRange
+    virtual T Get(int index) = 0;//can throw IndexOutOfRange
+    virtual int GetLength() = 0;
+    virtual void Append(T item) = 0;
+    virtual void Prepend(T item) = 0;
+    virtual void InsertAt(T item, int index) = 0;//can throw IndexOutOfRange
+    virtual Sequence<T>* GetSubsequence(int startindex, int endindex) = 0;//can throw IndexOutOfRange
+    virtual void Print() = 0;
+};
+
+template <class T>
+class ArraySequence : public Sequence<T> {
+private:
+    DynamicArray<T>* Array;
+    int size;
+public:
+    ArraySequence(T* items, int count) : Array(new DynamicArray<T>(items, count)), size(0) {};
+    ArraySequence() : Array(new DynamicArray<T>(size)) {};
+    ArraySequence(const LinkedList<T>& old_version) : Array(new DynamicArray<T>(old_version)), size(0) {};
+    virtual T GetFirst() override {
+        if (this->Array->GetSize() == 0) 
+            throw "IndexOutOfRange";
+        return this->Array->Get(0);
+    }
+    virtual T GetLast() override {
+        if (this->Array->GetSize() == 0)
+            throw "IndexOutOfRange";
+        int last = this->Array->GetSize();
+        return this->Array->Get(last - 1);
+    }
+    virtual T Get(int index) override {
+        if ((index < 0) || (index >= this->Array->GetSize()))
+            throw "IndexOutOfRange";
+        return this->Array->Get(index);
+    }
+    virtual Sequence<T>* GetSubsequence(int startindex, int endindex) override {
+        if ((startindex < 0) || (startindex >= this->Array->GetSize()) || (endindex < 0) || (endindex >= this->Array->GetSize()))
+            throw "IndexOutOfRange";
+        T* items = new T[endindex - startindex + 1];
+        int count = startindex;
+        for (int i = 0; i < (endindex - startindex + 1); i++) {
+            items[i] = this->Array->Get(count);
+            ++count;
+        }
+        ArraySequence<T> Arr(items, endindex - startindex + 1);
+        Sequence<T>* seq = &Arr;
+        return seq;
+    }
+    virtual int GetLength() override {
+        return this->Array->GetSize();
+    }
+    virtual void Print() override {
+        this->Array->GetArray();
+    }
+    virtual void Append(T item) override {
+        if (this->Array->GetSize() == size)
+            this->Array->Resize(this->Array->GetSize() + 1);
+        this->Array->Set(size, item);
+        ++size;
+    }
+    virtual void Prepend(T item) override {
+        int arr_size = this->Array->GetSize();
+        T* arr = new T[arr_size * 2];
+        for (int i = 0; i < arr_size; i++) {
+            arr[i] = this->Array->Get(i);
+        }
+        this->Array->Resize(arr_size + 1);
+        for (int i = arr_size; i >= 1; i--) {
+            this->Array->Set(i, arr[i - 1]);
+        }
+        this->Array->Set(0, item);
+        ++size;
+    }
+    virtual void InsertAt(T item, int index) override {
+        int arr_size = this->Array->GetSize();
+        T* arr = new T[arr_size * 2];
+        for (int i = 0; i < arr_size; i++) {
+            arr[i] = this->Array->Get(i);
+        }
+        this->Array->Resize(arr_size + 1);
+        for (int i = arr_size; i >= index + 1; i--) {
+            this->Array->Set(i, arr[i - 1]);
+        }
+        this->Array->Set(index, item);
+        ++size;
+    }
+    Sequence<T>* Concat(const ArraySequence<T>& list) {
+        int k = this->Array->GetSize();
+        int new_size = list.Array->GetSize();
+        T* arr = new T[k + new_size];
+        for (int i = 0; i < k; i++) {
+            arr[i] = this->Array->Get(i);
+        }
+        int p = 0;
+        for (int i = k; i < k + new_size; i++) {
+            arr[i] = list.Array->Get(p);
+            ++p;
+        }
+        ArraySequence<T> a_arr(arr, k + new_size);
+        Sequence<T>* aa_arr = &a_arr;
+        return aa_arr;
+    }
+};
+
+template <class T>
+class LinkedListSequence : public Sequence<T> {
+private:
+    LinkedList<T>* List;
+public:
+    LinkedListSequence(T* items, int count) : List(new LinkedList<T>(items, count)) {};
+    LinkedListSequence() : List(new LinkedList<T>) {};
+    LinkedListSequence(const LinkedList<T>& old_version) : List(new LinkedList<T>(old_version)) {};
+    virtual T GetFirst() override {
+        return this->List->GetFirst();
+    }
+    virtual T GetLast() override {
+        return this->List->GetLast();
+    }
+    virtual T Get(int index) override {
+        return this->List->Get(index);
+    }
+    virtual Sequence<T>* GetSubsequence(int startindex, int endindex) override {
+        T* items = new T[endindex - startindex + 1];
+        int count = startindex;
+        for (int i = 0; i < (endindex - startindex + 1); i++) {
+            items[i] = this->List->Get(count);
+            ++count;
+        }
+        LinkedListSequence<T> list(items, endindex - startindex + 1);
+        Sequence<T>* seq = &list;
+        return seq;
+    }
+    virtual int GetLength() override {
+        return this->List->GetLength();
+    }
+    virtual void Print() override {
+        this->List->GetList();
+    }
+    virtual void Append(T item) override {
+        this->List->Append(item);
+    }
+    virtual void Prepend(T item) override {
+        this->List->Prepend(item);
+    }
+    virtual void InsertAt(T item, int index) override {
+        this->List->InsertAt(item, index);
+    }
+    Sequence<T>* Concat(const LinkedList<T>& list) {
+        LinkedList<T>* list1 = this->List->Concat(list);
+        LinkedListSequence<T> l_list(*list1);
+        Sequence<T>* ll_list = &l_list;
+        return ll_list;
+    }
+};
+
+int main() {
+    DynamicArray<int> arr1(5);
+    int p = arr1.GetSize();
+    cout << p << endl;
+    try {ения(
+        arr1.Set(0, 0);
+    }
+    catch (const char* msg) {
+        cout << msg << endl;
+    }
+    arr1.Set(1, 1);
+    arr1.Set(2, 0);
+    arr1.Set(3, 0);
+    arr1.Set(4, 0);
+    arr1.GetArray();
+    int k = arr1.Get(4);
+    cout << k << endl;
+    arr1.Set(2, 45);
+    arr1.GetArray();
+    int* symb = new int[4];
+    symb[0] = 1;
+    symb[1] = 2;
+    symb[2] = 65;
+    symb[3] = 8;
+    DynamicArray<int> arr2(symb, 1);
+    arr2.GetArray();
+    DynamicArray<int> arr3(arr2);
+    arr3.GetArray();
+    arr1.Resize(7);
+    arr1.Set(5, 1);
+    arr1.Set(6, 0);
+    p = arr1.GetSize();
+    cout << p << endl;
+
+
+    LinkedList<int> list1;
+    list1.Prepend(0);
+    list1.Prepend(1);
+    list1.Append(5);
+    try {
+        list1.InsertAt(2, 0);
+    }
+    catch (const char* msg) {
+        cout << msg << endl;
+    }
+    list1.GetList();
+    int k1 = list1.GetFirst();
+    cout << k1 << endl;
+    k1 = list1.GetLast();
+    cout << k1 << endl;
+    k1 = list1.Get(0);
+    cout << k1 << endl;
+    k1 = list1.GetLength();
+    cout << k1 << endl;
+    LinkedList<int> list2;
+    list2.Append(4);
+    list2.Prepend(60);
+    list2.GetList();
+    LinkedList<int> list3(symb, 1);
+    list3.GetList();
+    LinkedList<int> list4(list2);
+    list4.GetList();
+    LinkedList<int>* list5;
+    list5 = list4.GetSubList(0, 0);
+    list5->GetList();
+    LinkedList<int>* list6;
+    list6 = list4.Concat(list1);
+    list6->GetList();
+
+    ArraySequence<int> arr11(symb, 4);
+    ArraySequence<int> arr12(symb, 2);
+    ArraySequence<int> arr13(arr12);
+    ArraySequence<int> arr14;
+    p = arr11.GetLength();
+    cout << p << endl;
+    p = arr11.GetFirst();
+    cout << p << endl;
+    p = arr11.Get(3);
+    cout << p << endl;
+    p = arr11.GetLast();
+    cout << p << endl;
+    arr11.Prepend(12);
+    arr11.Print();
+    arr11.Append(234);
+    arr11.Print();
+    arr11.Prepend(12);
+    arr11.Print();
+    arr11.InsertAt(45, 3);
+    arr11.Print();
+    Sequence<int>* seq = arr11.GetSubsequence(1, 2);
+    seq->Print();
+    Sequence<int>* seq11 = arr11.Concat(arr12);
+    seq11->Print();
+
+
+    LinkedListSequence<int> list11(symb, 4);
+    LinkedListSequence<int> list12;
+    LinkedListSequence<int> list13(list11);
+    p = list11.GetFirst();
+    cout << p << endl;
+    p = list11.Get(2);
+    cout << p << endl;
+    p = list11.GetLast();
+    cout << p << endl;
+    list11.Append(3);
+    list11.Print();
+    list11.Prepend(12);
+    list11.Print();
+    list11.InsertAt(23, 2);
+    list11.Print();
+    Sequence<int>* seq1 = list11.GetSubsequence(1, 3);
+    seq1->Print();
+    Sequence<int>* seq2 = list11.Concat(list2);
+    seq2->Print();
+
+    return 0;
+}
